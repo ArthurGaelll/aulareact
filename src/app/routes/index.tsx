@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Dashboard, Login } from "../pages";
+import { Dashboard, Login, State, Effect, Memo, Callback, Ref } from "../pages";
 
 export const AppRoutes = () => {
     return (
@@ -7,8 +7,12 @@ export const AppRoutes = () => {
             <Routes>
                 <Route path="/entrar" element={<Login />} />
                 <Route path="/pagina-inicial" element={<Dashboard />} />
-                
-                                
+                <Route path="/state" element={<State />} />
+                <Route path="/effect" element={<Effect />} />
+                <Route path="/memo" element={<Memo />} />
+                <Route path="/memo" element={<Callback />} />  
+                <Route path="/ref" element={<Ref />} />      
+
                 <Route path="*" element={<Navigate to="/pagina-inicial" />} />
             </Routes>
         </BrowserRouter>
