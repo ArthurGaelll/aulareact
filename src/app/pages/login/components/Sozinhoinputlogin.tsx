@@ -7,6 +7,7 @@ interface ISozinhoinputlogjn{
 
 export const Sozinhoinputlogin: React.FC<ISozinhoinputlogjn> = (props) => {
     return(
+        
         <label>
             <span>{props.label}</span>
             <input 
@@ -15,5 +16,6 @@ export const Sozinhoinputlogin: React.FC<ISozinhoinputlogjn> = (props) => {
                 onChange={e => props.onChange(e.target.value)}
             />
         </label>
+       
     );
 }
