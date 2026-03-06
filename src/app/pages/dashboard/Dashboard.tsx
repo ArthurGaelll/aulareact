@@ -1,25 +1,105 @@
-import { useRef } from "react";
-import { Link } from "react-router-dom";
-import { useUsuarioLogado } from "../../shared/hooks";
+import { useCallback, useEffect, useState } from "react";
+import { ITarefa, TarefasService } from "../../shared/services/api/tarefas/TarefasServices";
+import { ApiException } from "../../shared/services/api/ApiExceptions";
+
+
 
 export const Dashboard = () => {
-    const counterRef = useRef({  counter: 0  })
-     const { nomeDoUsuario, logout } = useUsuarioLogado();
-   
-    return(
+
+    const [lista, setLista] = useState<ITarefa[]>([
+
+    ]);
+
+    useEffect(() => {
+        TarefasService.getall()
+            .then((result) => {
+                if (result instanceof ApiException) {
+                    alert(result.message)
+                } else {
+                    setLista(result);
+                }
+            });
+    }, []);
+
+
+    // const handleToggleSelected = useCallback((title: string) => {
+    //     setLista(oldLista => oldLista.map(item => {
+    //         if (item.title === title) {
+    //             return { ...item, isCompleted: !item.isCompleted };
+    //         }
+    //         return item;
+    //     }));
+    // }, []);
+
+    const handleInputKeyDown: React.KeyboardEventHandler<HTMLInputElement> = useCallback((e) => {
+
+        if (e.key === "Enter") {
+            if (e.currentTarget.value.trim().length === 0) return;
+            const value = e.currentTarget.value;
+            e.currentTarget.value = "";
+
+            if (lista.some((item) => item.title === value)) return
+
+            TarefasService.create({ title: value, isCompleted: false, })
+                .then((result) => {
+                    if (result instanceof ApiException) {
+                        alert(result.message)
+                    } else {
+                        setLista((oldlista) => {
+                            return [
+                                ...oldlista,
+                                result
+
+                            ];
+                        });
+                    }
+
+                });
+
+        }
+    }, [lista]);
+
+    const handleToggleComplete = useCallback((id: number) => {
+        const tarefaToUpdate = lista.find((tarefa) => tarefa.id === id);
+        if (!tarefaToUpdate) return;
+        TarefasService.updateById(id, {...tarefaToUpdate, isCompleted: !tarefaToUpdate.isCompleted,})
+            .then((result) => {
+                if (result instanceof ApiException) {
+                    alert(result.message);
+                } else {
+                    setLista(oldlista => {
+                        return oldlista.map(oldlistaitem => {
+                            if (oldlistaitem.id === id) return result;
+                            return oldlistaitem;
+                                
+                            
+
+                        })
+                    })
+                }
+            })
+
+
+    }, [lista])
+
+    return (
         <div>
-            <p>{nomeDoUsuario}</p>  
+            <input onKeyDown={handleInputKeyDown} placeholder="Adicionar item..." />
 
-            <p>Contador {counterRef.current.counter} </p>
+            <p>Quantidade selecionados: {lista.filter(i => i.isCompleted).length}</p>
 
-            <button onClick={()=> counterRef.current.counter++}>Somar</button>
-            <button onClick={()=> console.log(counterRef.current.counter)}>Logar</button>
-            <button onClick={logout}>Logout</button>
-            <Link to="/entrar">Login</Link>  
-            <Link to="/state">Teste</Link>  
-            <Link to="/effect">Effect</Link> 
-            <Link to="/memo">Memo</Link> 
-            <Link to="/ref">Ref</Link> 
-        </div>        
+            <ul>
+                {lista.map((item) => (
+                    <li key={item.id}>
+                        <input
+                            type="checkbox"
+                            checked={item.isCompleted}
+                            onChange={() => handleToggleComplete(item.id)}
+                        />
+                        {item.title}
+                    </li>
+                ))}
+            </ul>
+        </div>
     );
 }
